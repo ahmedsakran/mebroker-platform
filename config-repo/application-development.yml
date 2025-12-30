@@ -1,0 +1,13 @@
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka
+
+security:
+  jwt:
+    secret: MySuperSecretKeyForJwtAuthService123456789
+
+logging:
+  level:
+    root: INFO
+    org.springframework.web: DEBUG

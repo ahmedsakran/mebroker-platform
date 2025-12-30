@@ -1,0 +1,23 @@
+-----------------------------------------------------------------------------------------------
+// 1- Java Spring comman commands
+---------------------------------
+* run specific module :
+-----------------------
+mvn spring-boot:run
+-----------------------------------------------------------------------------------------------
+* run all modules :
+-------------------
+mvn -pl discovery-server,config-server,api-gateway,auth-service,user-service spring-boot:run
+-----------------------------------------------------------------------------------------------  
+
+
+
+// 2- Github comman commands :
+------------------------------
+git add README.md
+git add .  
+git commit -m "first commit"  
+git branch -M main 
+git remote add origin https://github.com/ahmedsakran/mebroker-platform.git  
+git push -u origin main 
+

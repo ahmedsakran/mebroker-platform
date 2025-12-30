@@ -1,0 +1,25 @@
+spring:
+  application:
+    name: discovery-server
+
+  profiles:
+    active: development
+
+  cloud:
+    config:
+      uri: http://localhost:8888
+
+server:
+  port: 8761
+
+
+# ✔️ No circular dependency
+# ✔️ Eureka can start cleanly
+# ✔️ Config Server still centralizes config
+# Discovery-server does NOT use discovery to find Config Server    
+
+  # cloud:
+  #   config:
+  #     discovery:
+  #       enabled: true
+  #       service-id: config-server

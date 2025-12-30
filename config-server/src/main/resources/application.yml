@@ -1,0 +1,30 @@
+spring:
+
+  application:
+    name: config-server
+  
+  profiles:
+    active: development  
+
+  cloud:
+    config:
+      fail-fast: true
+      server:
+        git:
+          uri: https://github.com/ahmedsakran/global-config-repo.git
+          default-label: main
+server:
+  port: 8888
+
+eureka:
+  client:
+    register-with-eureka: true
+    fetch-registry: true
+    service-url:
+      defaultZone: http://localhost:8761/eureka
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info      

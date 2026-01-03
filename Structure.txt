@@ -1,0 +1,14 @@
+#when create user
+user.setPassword(passwordEncoder.encode("plainPassword"));
+----------------------------------------------------------
+register user :
+----------------
+POST /auth/register
+→ validate input
+→ hash password (BCrypt)
+→ assign ROLE_CLIENT
+→ save user
+→ generate JWT
+→ generate refresh token
+→ return AuthResponse
+

@@ -16,8 +16,13 @@ mvn -pl discovery-server,config-server,api-gateway,auth-service,user-service spr
 ------------------------------
 git add README.md
 git add .  
-git commit -m "first commit"  
+git commit -m "change configuration"  
 git branch -M main 
 git remote add origin https://github.com/ahmedsakran/mebroker-platform.git
 git push -u origin main 
+
+-----------------------------------------
+import com.mebroker.common.exception.*;
+
+
 

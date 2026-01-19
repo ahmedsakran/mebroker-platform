@@ -4,6 +4,8 @@ import jakarta.persistence.*;
 import lombok.*;
 import java.util.Set;
 
+import org.hibernate.annotations.BatchSize;
+
 @Entity
 @Table(name = "users")
 @Getter
@@ -20,13 +22,24 @@ public class User {
     @Column(unique = true, nullable = false)
     private String username;
 
+    @Column(unique = true, nullable = false)
+    private String email;
+
+    @Column(unique = true) 
+    private String phone;
+
+    @Column(nullable = false)
     private String password;
 
-    @ManyToMany(fetch = FetchType.EAGER)
-    @JoinTable(
-        name = "user_role_mapping",
-        joinColumns = @JoinColumn(name = "user_id"),
-        inverseJoinColumns = @JoinColumn(name = "role_id")
+    @OneToMany(
+        mappedBy = "user",
+        cascade = CascadeType.ALL,
+        orphanRemoval = true,
+        fetch = FetchType.LAZY
     )
-    private Set<Role> roles;
+    @BatchSize(size = 10)
+    private Set<UserSystemRole> userRoles;
+
+    @Column(nullable = false)
+    private boolean isActive;
 }

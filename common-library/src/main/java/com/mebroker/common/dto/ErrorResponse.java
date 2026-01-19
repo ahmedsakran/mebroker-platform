@@ -1,28 +1,17 @@
 package com.mebroker.common.dto;
 
-import java.time.LocalDateTime;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import java.time.Instant;
 
+@Data
+@Builder
+@AllArgsConstructor
 public class ErrorResponse {
 
+    private String code;
     private String message;
-    private int status;
-    private LocalDateTime timestamp;
-
-    public ErrorResponse(String message, int status) {
-        this.message = message;
-        this.status = status;
-        this.timestamp = LocalDateTime.now();
-    }
-
-    public String getMessage() {
-        return message;
-    }
-
-    public int getStatus() {
-        return status;
-    }
-
-    public LocalDateTime getTimestamp() {
-        return timestamp;
-    }
+    private Instant timestamp;
+    private String path;
 }

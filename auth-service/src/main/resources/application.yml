@@ -7,3 +7,9 @@ spring:
 
   profiles:
     active: development
+    
+  lifecycle:
+    timeout-per-shutdown-phase: 30s
+
+server:
+  shutdown: graceful

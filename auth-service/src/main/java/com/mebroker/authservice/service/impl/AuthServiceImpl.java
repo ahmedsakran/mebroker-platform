@@ -1,109 +1,94 @@
 package com.mebroker.authservice.service.impl;
 
 import com.mebroker.authservice.dto.request.LoginRequest;
-import com.mebroker.authservice.dto.request.RefreshTokenRequest;
-import com.mebroker.authservice.dto.response.AuthResponse;
-import com.mebroker.authservice.entity.RefreshToken;
-import com.mebroker.authservice.entity.User;
-import com.mebroker.authservice.repository.RefreshTokenRepository;
-import com.mebroker.authservice.repository.UserRepository;
-import com.mebroker.authservice.security.JwtService;
-import com.mebroker.authservice.service.AuthService;
-import com.mebroker.common.exception.UnauthorizedException;
-import org.springframework.stereotype.Service;
-import java.time.Instant;
-import java.util.UUID;
-import java.util.Set;
 import com.mebroker.authservice.dto.request.RegisterRequest;
-import com.mebroker.authservice.entity.Role;
-import com.mebroker.authservice.repository.RoleRepository;
+import com.mebroker.authservice.dto.response.AuthResponse;
+import com.mebroker.authservice.entity.SystemRole;
+import com.mebroker.authservice.entity.User;
+import com.mebroker.authservice.entity.UserSystemRole;
+import com.mebroker.authservice.repository.SystemRoleRepository;
+import com.mebroker.authservice.repository.UserRepository;
+import com.mebroker.authservice.service.AuthService;
+import com.mebroker.authservice.service.TokenService;
+import com.mebroker.common.exception.BadRequestException;
+import com.mebroker.common.exception.UnauthorizedException;
+import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+
+import java.util.Set;
 
 @Service
+@RequiredArgsConstructor
 public class AuthServiceImpl implements AuthService {
 
     private final UserRepository userRepository;
-    private final RefreshTokenRepository refreshTokenRepository;
-    private final JwtService jwtService;
-    private final RoleRepository roleRepository;
     private final PasswordEncoder passwordEncoder;
-
-
-    public AuthServiceImpl(UserRepository userRepository,
-                        RefreshTokenRepository refreshTokenRepository,
-                        JwtService jwtService,
-                        RoleRepository roleRepository,
-                        PasswordEncoder passwordEncoder) {
-        this.userRepository = userRepository;
-        this.refreshTokenRepository = refreshTokenRepository;
-        this.jwtService = jwtService;
-        this.roleRepository = roleRepository;
-        this.passwordEncoder = passwordEncoder;
-    }
+    private final TokenService tokenService;
 
     @Override
     public AuthResponse login(LoginRequest request) {
 
         User user = userRepository.findByUsername(request.getUsername())
-                .orElseThrow(() -> new UnauthorizedException("Invalid credentials"));
+                .orElseThrow(() -> new UnauthorizedException(
+                        "INVALID_CREDENTIALS",
+                        "Invalid username or password"
+                ));
 
         if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
-            throw new UnauthorizedException("Invalid credentials");
+            throw new UnauthorizedException(
+                    "INVALID_CREDENTIALS",
+                    "Invalid username or password"
+            );
         }
 
-        String accessToken = jwtService.generateToken(user);
-        String refreshToken = createRefreshToken(user);
-
-        return new AuthResponse(accessToken, refreshToken);
-    }
-
-    @Override
-    public AuthResponse refreshToken(RefreshTokenRequest request) {
-
-        RefreshToken refreshToken = refreshTokenRepository
-                .findByToken(request.getRefreshToken())
-                .orElseThrow(() -> new UnauthorizedException("Invalid refresh token"));
-
-        if (refreshToken.getExpiryDate().isBefore(Instant.now())) {
-            throw new UnauthorizedException("Refresh token expired");
-        }
-
-        String newAccessToken = jwtService.generateToken(refreshToken.getUser());
-
-        return new AuthResponse(newAccessToken, refreshToken.getToken());
-    }
-
-    private String createRefreshToken(User user) {
-        RefreshToken token = new RefreshToken();
-        token.setUser(user);
-        token.setToken(UUID.randomUUID().toString());
-        token.setExpiryDate(Instant.now().plusSeconds(86400)); // 1 day
-        refreshTokenRepository.save(token);
-        return token.getToken();
-    }
-
-    @Override
-    public AuthResponse register(RegisterRequest request) {
-
-        if (userRepository.findByUsername(request.getUsername()).isPresent()) {
-            throw new IllegalArgumentException("Username already exists");
-        }
-
-        Role defaultRole = roleRepository.findByName("CLIENT")
-                .orElseThrow(() -> new IllegalStateException("Default role CLIENT not found"));
-
-        User user = User.builder()
-                .username(request.getUsername())
-                .password(passwordEncoder.encode(request.getPassword()))
-                .roles(Set.of(defaultRole))
+        return AuthResponse.builder()
+                .accessToken(tokenService.createAccessToken(user))
+                .refreshToken(tokenService.createRefreshToken(user))
                 .build();
-
-        userRepository.save(user);
-
-        String accessToken = jwtService.generateToken(user);
-        String refreshToken = createRefreshToken(user);
-
-        return new AuthResponse(accessToken, refreshToken);
     }
+
+//     @Override
+// public AuthResponse register(RegisterRequest request) {
+
+//     if (userRepository.existsByUsername(request.getUsername())) {
+//         throw new BadRequestException("USERNAME_EXISTS", "Username already exists");
+//     }
+
+//     if (userRepository.existsByEmail(request.getEmail())) {
+//         throw new BadRequestException("EMAIL_EXISTS", "Email already exists");
+//     }
+
+//     SystemRole clientRole = systemRoleRepository
+//             .findByRoleTitle("Client")
+//             .orElseThrow(() ->
+//                     new RuntimeException("Default role CLIENT not found"));
+
+//     // 1️⃣ إنشاء المستخدم
+//     User user = User.builder()
+//             .username(request.getUsername())
+//             .email(request.getEmail())
+//             .password(passwordEncoder.encode(request.getPassword()))
+//             .isActive(true)
+//             .build();
+
+//     // 2️⃣ إنشاء الربط User ↔ Role
+//     UserSystemRole userRole = UserSystemRole.builder()
+//             .user(user)
+//             .systemRole(clientRole)
+//             .build();
+
+//     // 3️⃣ ربط الأدوار بالمستخدم
+//     user.setUserRoles(Set.of(userRole));
+
+//     // 4️⃣ حفظ المستخدم (Cascade سيحفظ UserSystemRole)
+//     userRepository.save(user);
+
+//     return AuthResponse.builder()
+//             .accessToken(tokenService.createAccessToken(user))
+//             .refreshToken(tokenService.createRefreshToken(user))
+//             .build();
+// }
+
 
 }

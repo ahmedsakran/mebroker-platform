@@ -4,7 +4,7 @@ spring:
     name: config-server
   
   profiles:
-    active: development  
+    active: development
 
   cloud:
     config:
@@ -13,6 +13,9 @@ spring:
         git:
           uri: https://github.com/ahmedsakran/global-config-repo.git
           default-label: main
+  # main:
+  #   web-application-type: reactive
+    
 server:
   port: 8888
 

@@ -2,8 +2,13 @@ spring:
   application:
     name: api-gateway
 
+  profiles:
+    active: development
+
   config:
     import: "optional:configserver:http://localhost:8888"
 
-  profiles:
-    active: development
+  cloud:
+    config:
+      allow-override: true
+      override-system-properties: true

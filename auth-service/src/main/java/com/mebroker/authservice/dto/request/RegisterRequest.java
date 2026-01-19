@@ -1,28 +1,30 @@
 package com.mebroker.authservice.dto.request;
 
+import java.util.Set;
+import com.mebroker.authservice.domain.otp.OtpChannel;
+import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import lombok.Getter;
+import lombok.Setter;
 
+@Getter
+@Setter
 public class RegisterRequest {
 
     @NotBlank
     private String username;
 
+    @Email
+    private String email;
+
+    private String phone;
+
     @NotBlank
     private String password;
 
-    public String getUsername() {
-        return username;
-    }
+    @NotNull
+    private OtpChannel channel; // EMAIL or SMS
 
-    public String getPassword() {
-        return password;
-    }
-
-    public void setUsername(String username) {
-        this.username = username;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
-    }
+    private Set<String> roles; // e.g. ["CLIENT", "BROKER"]
 }

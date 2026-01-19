@@ -1,3 +1,77 @@
+
+common-library
+└── src/main/java/com/mebroker/common
+    ├── dto
+    │   └── ErrorResponse.java
+    │
+    ├── exception
+    │   ├── BaseException.java
+    │   ├── UnauthorizedException.java
+    │   ├── ForbiddenException.java
+    │   ├── NotFoundException.java
+    │   ├── BadRequestException.java
+    │   └── GlobalExceptionHandler.java
+    │
+    └── security
+        └── JwtValidator.java
+
+
+auth-service
+└── src/main/java/com/mebroker/authservice
+    ├── controller
+    │   └── AuthController.java
+    │
+    ├── service
+    │   ├── AuthService.java
+    │   ├── TokenService.java
+    │   └── impl
+    │       ├── AuthServiceImpl.java
+    │       └── TokenServiceImpl.java
+    │
+    ├── security
+    │   ├── JwtService.java          <-- generate tokens
+    │   ├── JwtAuthenticationFilter.java
+    │   ├── SecurityConfig.java
+    │   └── PasswordEncoderConfig.java
+    │
+    ├── entity
+    │   ├── User.java
+    │   ├── SystemRole.java
+    │   ├── UserSystemRole.java
+    │   └── RefreshToken.java
+    │
+    ├── repository
+    │   ├── UserRepository.java
+    │   ├── SystemRoleRepository.java
+    │   ├── UserSystemRoleRepository.java
+    │   └── RefreshTokenRepository.java
+    │
+    ├── dto
+    │   ├── request
+    │   └── response
+    │
+    ├── exception
+    │   ├── AuthException.java
+    │   └── GlobalExceptionHandler.java
+    │
+    └── AuthServiceApplication.java
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 #when create user
 user.setPassword(passwordEncoder.encode("plainPassword"));
 ----------------------------------------------------------
@@ -6,9 +80,11 @@ register user :
 POST /auth/register
 → validate input
 → hash password (BCrypt)
-→ assign ROLE_CLIENT
+→ assign SystemRole_CLIENT
 → save user
 → generate JWT
 → generate refresh token
 → return AuthResponse
+-----------------------------------------------------------
+
 

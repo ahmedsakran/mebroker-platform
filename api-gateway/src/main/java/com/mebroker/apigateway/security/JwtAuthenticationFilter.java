@@ -3,54 +3,67 @@ package com.mebroker.apigateway.security;
 import com.mebroker.common.security.JwtClaims;
 import com.mebroker.common.security.JwtConstants;
 import com.mebroker.common.security.JwtValidator;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.cloud.gateway.filter.GatewayFilterChain;
+import io.jsonwebtoken.Claims;
+import lombok.RequiredArgsConstructor;
 import org.springframework.cloud.gateway.filter.GlobalFilter;
+import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.core.Ordered;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 
 @Component
+@RequiredArgsConstructor
 public class JwtAuthenticationFilter implements GlobalFilter, Ordered {
 
     private final JwtValidator jwtValidator;
 
-    public JwtAuthenticationFilter(
-            @Value("${security.jwt.secret}") String jwtSecret) {
-        this.jwtValidator = new JwtValidator(jwtSecret);
-    }
-
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
+
+        String path = exchange.getRequest().getURI().getPath();
+
+        // ✅ Allow auth & actuator endpoints
+        if (path.startsWith("/auth") || path.startsWith("/actuator")) {
+            return chain.filter(exchange);
+        }
+
+        // ✅ Allow CORS preflight requests
+        if (exchange.getRequest().getMethod() == HttpMethod.OPTIONS) {
+            return chain.filter(exchange);
+        }
 
         String authHeader = exchange.getRequest()
                 .getHeaders()
                 .getFirst(HttpHeaders.AUTHORIZATION);
-
-        // Allow auth endpoints without token
-        if (exchange.getRequest().getURI().getPath().startsWith("/auth")) {
-            return chain.filter(exchange);
-        }
 
         if (authHeader == null || !authHeader.startsWith(JwtConstants.TOKEN_PREFIX)) {
             exchange.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED);
             return exchange.getResponse().setComplete();
         }
 
-        try {
-            JwtClaims claims = jwtValidator.validateToken(authHeader);
+        String token = authHeader.substring(JwtConstants.TOKEN_PREFIX.length());
 
-            // Pass user info to downstream services via headers
-            ServerWebExchange modifiedExchange = exchange.mutate()
-                    .request(builder -> builder
-                            .header("X-User-Id", claims.getUserId())
-                            .header("X-Roles", String.join(",", claims.getRoles())))
+        try {
+            Claims claims = jwtValidator.validateAndGetClaims(token);
+
+            ServerWebExchange mutatedExchange = exchange.mutate()
+                    .request(
+                            exchange.getRequest().mutate()
+                                    .header(JwtClaims.USER_ID, claims.get(JwtClaims.USER_ID).toString())
+                                    .header(JwtClaims.USERNAME, claims.getSubject())
+                                    .header(
+                                            JwtClaims.ROLES,
+                                            claims.get(JwtClaims.ROLES).toString()
+                                    )
+                                    .build()
+                    )
                     .build();
 
-            return chain.filter(modifiedExchange);
+            return chain.filter(mutatedExchange);
 
         } catch (Exception ex) {
             exchange.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED);
@@ -60,6 +73,6 @@ public class JwtAuthenticationFilter implements GlobalFilter, Ordered {
 
     @Override
     public int getOrder() {
-        return -1; // run early
+        return -1; // run before other filters
     }
 }

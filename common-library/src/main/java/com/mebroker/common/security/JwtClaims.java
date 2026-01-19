@@ -1,22 +1,10 @@
 package com.mebroker.common.security;
 
-import java.util.List;
+public final class JwtClaims {
 
-public class JwtClaims {
+    public static final String USER_ID = "uid";
+    public static final String USERNAME = "uname";
+    public static final String ROLES = "roles";
 
-    private String userId;
-    private List<String> roles;
-
-    public JwtClaims(String userId, List<String> roles) {
-        this.userId = userId;
-        this.roles = roles;
-    }
-
-    public String getUserId() {
-        return userId;
-    }
-
-    public List<String> getRoles() {
-        return roles;
-    }
+    private JwtClaims() {}
 }

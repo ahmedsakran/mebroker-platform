@@ -5,6 +5,8 @@ eureka:
 
 security:
   jwt:
+    issuer: mebroker
+    expiration-minutes: 60  
     secret: MySuperSecretKeyForJwtAuthService123456789
 
 logging:

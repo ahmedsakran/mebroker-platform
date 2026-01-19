@@ -1,49 +1,45 @@
 package com.mebroker.authservice.security;
 
-import com.mebroker.authservice.entity.Role;
 import com.mebroker.authservice.entity.User;
 import com.mebroker.common.security.JwtConstants;
 import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
-import io.jsonwebtoken.security.Keys;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import java.nio.charset.StandardCharsets;
-import java.security.Key;
 import java.util.Date;
-import java.util.List;
+import java.util.UUID;
+import javax.crypto.SecretKey;
+import com.mebroker.common.security.JwtClaims;
+import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 
 @Service
+@RequiredArgsConstructor
 public class JwtService {
 
-    private final Key signingKey;
-    private final long expirationMs;
+    private final SecretKey secretKey;   // ✅ من JwtConfig
 
-    public JwtService(
-            @Value("${security.jwt.secret}") String secret,
-            @Value("${security.jwt.expiration-ms:3600000}") long expirationMs
-    ) {
-        this.signingKey = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
-        this.expirationMs = expirationMs;
-    }
+    @Value("${security.jwt.access-expiration}")
+    private long accessTokenExpiration;
 
     /**
-     * Generates JWT access token for authenticated user
+     * Generate ACCESS TOKEN (JWT)
      */
-    public String generateToken(User user) {
-
-        List<String> roles = user.getRoles()
-                .stream()
-                .map(Role::getName)
-                .toList();
+     public String generateAccessToken(User user) {
 
         return Jwts.builder()
                 .setSubject(user.getUsername())
-                .claim(JwtConstants.CLAIM_USER_ID, user.getId())
-                .claim(JwtConstants.CLAIM_ROLES, roles)
+                .claim(JwtClaims.USER_ID, user.getId())
                 .setIssuedAt(new Date())
-                .setExpiration(new Date(System.currentTimeMillis() + expirationMs))
-                .signWith(signingKey, SignatureAlgorithm.HS256)
+                .setExpiration(
+                        new Date(System.currentTimeMillis() + accessTokenExpiration)
+                )
+                .signWith(secretKey)
                 .compact();
+    }
+
+    /**
+     * Generate REFRESH TOKEN (Random UUID)
+    */
+    public String generateRefreshToken() {
+        return UUID.randomUUID().toString();
     }
 }

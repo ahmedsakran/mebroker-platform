@@ -1,43 +1,23 @@
 package com.mebroker.common.security;
 
-import com.mebroker.common.exception.UnauthorizedException;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.security.Keys;
-import java.nio.charset.StandardCharsets;
-import java.security.Key;
-import java.util.List;
+
+import javax.crypto.SecretKey;
 
 public class JwtValidator {
 
-    private final Key signingKey;
+    private final SecretKey secretKey;
 
-    public JwtValidator(String secret) {
-        this.signingKey = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
+    public JwtValidator(SecretKey secretKey) {
+        this.secretKey = secretKey;
     }
 
-    public JwtClaims validateToken(String token) {
-        try {
-            Claims claims = Jwts.parserBuilder()
-                    .setSigningKey(signingKey)
-                    .build()
-                    .parseClaimsJws(cleanToken(token))
-                    .getBody();
-
-            String userId = claims.get(JwtConstants.CLAIM_USER_ID, String.class);
-            List<String> roles = claims.get(JwtConstants.CLAIM_ROLES, List.class);
-
-            return new JwtClaims(userId, roles);
-
-        } catch (Exception ex) {
-            throw new UnauthorizedException("Invalid or expired JWT token", ex);
-        }
-    }
-
-    private String cleanToken(String token) {
-        if (token.startsWith(JwtConstants.TOKEN_PREFIX)) {
-            return token.substring(JwtConstants.TOKEN_PREFIX.length());
-        }
-        return token;
+    public Claims validateAndGetClaims(String token) {
+        return Jwts.parserBuilder()
+                .setSigningKey(secretKey)
+                .build()
+                .parseClaimsJws(token)
+                .getBody();
     }
 }

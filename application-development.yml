@@ -1,0 +1,22 @@
+# Unified security settings
+security:
+  jwt:
+    enabled: true
+    secret: ${JWT_SECRET}
+    access-expiration: ${JWT_ACCESS_EXPIRATION:900000}
+    refresh-expiration: ${JWT_REFRESH_EXPIRATION:604800000}
+
+# Unified link with Eureka
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka
+    register-with-eureka: true
+    fetch-registry: true
+
+# Monitoring settings (Actuator)
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,refresh

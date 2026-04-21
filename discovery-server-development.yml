@@ -1,0 +1,47 @@
+server:
+  port: 8761
+
+spring:
+  application:
+    name: discovery-server
+
+# ========================
+# Eureka Server Settings
+# ========================
+eureka:
+  client:
+    register-with-eureka: false   # لأنه هو السيرفر نفسه
+    fetch-registry: false         # مش محتاج يجيب registry
+
+  server:
+    enable-self-preservation: true   # يحمي نفسه من shutdown مفاجئ
+    eviction-interval-timer-in-ms: 60000
+
+# ========================
+# Logging (Global)
+# ========================
+logging:
+  level:
+    root: INFO
+    com.netflix.eureka: INFO
+    com.netflix.discovery: INFO
+
+# ========================
+# Management / Actuator
+# ========================
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: always
+
+# ========================
+# Info (optional)
+# ========================
+info:
+  app:
+    name: discovery-server
+    environment: development

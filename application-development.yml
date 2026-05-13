@@ -6,6 +6,11 @@ security:
     access-expiration: ${JWT_ACCESS_EXPIRATION:900000}
     refresh-expiration: ${JWT_REFRESH_EXPIRATION:604800000}
 
+# Jackson global configuration
+spring:
+  Jackson:
+    property-naming-strategy: SNAKE_CASE
+
 # Unified link with Eureka
 eureka:
   client:
